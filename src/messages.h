@@ -17,6 +17,16 @@
 #ifndef MESSAGES_H
 #define MESSAGES_H
 
-// define the data structures for your messages here
+typedef struct {
+    int a;
+    int b;
+    char c;
+} MQ_REQUEST_MESSAGE;
+
+typedef struct {
+    int e;
+    char f[20];
+    char g[20];
+} MQ_RESPONSE_MESSAGE;
 
 #endif
