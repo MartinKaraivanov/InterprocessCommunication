@@ -74,8 +74,8 @@ int main (int argc, char * argv[])
 
         // Response
         rsp.e = result;
-        snprintf(rsp.f, sizeof(rsp.f), "Processed job %d", req.a);
-        snprintf(rsp.g, sizeof(rsp.g), "Result: %d", result);
+        rsp.f = req.b;
+        rsp.g = req.a;
 
         // Send the response
         if (mq_send(mq_rsp, (char*)&rsp, sizeof(rsp), 0) == -1) {
@@ -83,7 +83,7 @@ int main (int argc, char * argv[])
             break;
         }
 
-        printf("Worker 1 sent response: %d, '%s', '%s'\n\n", rsp.e, rsp.f, rsp.g);
+        printf("Worker 1 sent response: %d, %d, %d\n\n", rsp.e, rsp.f, rsp.g);
     }
 
     mq_close(mq_s1);

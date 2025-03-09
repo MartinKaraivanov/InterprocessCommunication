@@ -171,14 +171,28 @@ static void worker_processes(){
   printf("All worker child processes have finished. Router-dealer exiting.\n");
 }
 
+static void responses() {
+  MQ_RESPONSE_MESSAGE rsp;
+  ssize_t bytes_received;
+
+  while (true) {
+      bytes_received = mq_receive(mq_rep, (char*)&rsp, sizeof(rsp), NULL);
+      
+      if (bytes_received == -1) {
+          break;
+      }
+
+      printf("%d -> %d\n", rsp.g, rsp.e);
+      fflush(stdout);
+  }
+}
+
 int main (int argc, char * argv[])
 {
   if (argc != 1)
   {
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
   }
-
-  delete_message_queues();
 
   create_message_queues();
 
@@ -187,6 +201,8 @@ int main (int argc, char * argv[])
   routing_requests();
 
   worker_processes();
+
+  responses();
 
   delete_message_queues();
   
