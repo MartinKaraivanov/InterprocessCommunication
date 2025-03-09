@@ -29,10 +29,10 @@
 #include "settings.h"  
 #include "messages.h"
 
-char client2dealer_name[30] = "Req_queue_group98";
-char dealer2worker1_name[30] = "S1_queue_group98";
-char dealer2worker2_name[30] = "S2_queue_group98";
-char worker2dealer_name[30] = "Rsp_queue_group98";
+char client2dealer_name[30] = "/Req_queue_group98";
+char dealer2worker1_name[30] = "/S1_queue_group98";
+char dealer2worker2_name[30] = "/S2_queue_group98";
+char worker2dealer_name[30] = "/Rsp_queue_group98";
 
 mqd_t mq_req, mq_s1, mq_s2, mq_rep;
 
