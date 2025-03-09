@@ -25,11 +25,44 @@
 #include "messages.h"
 #include "request.h"
 
-static void rsleep (int t);
+static void rsleep (int t){
+    usleep(t * 1000);
+}
 
 
 int main (int argc, char * argv[])
 {
+    if(argc != 2){
+        fprintf(stderr, "Usage: %s <message_queue_name>\n", argv[0]);
+        exit(1);
+    }
+
+    char *mq_name = argv[1];
+
+    mqd_t mq_fd = mq_open(mq_name, O_WRONLY);
+    if(mq_fd == -1){
+        perror("mq_open() failed");
+        exit(1);
+    }
+
+    printf("Client connected to queue: %s\n", mq_name);
+
+    Request req;
+    while (getNextRequest(&req.job, &req.data, &req.service) == NO_ERR) { // Function from request.h
+        printf("Client: Sending request (ID: %d, Data: %d, Service: %d)\n", req.job, req.data, req.service);
+
+        if (mq_send(mq_fd, (char *)&req, sizeof(req), 0) == -1) {
+            perror("mq_send() failed");
+            break;
+        }
+
+        rsleep(50); // Some delay between requests
+    }
+
+    mq_close(mq_fd);
+    
+    printf("Client: Finished sending requests. Exiting.\n");
+
     // TODO:
     // (see message_queue_test() in interprocess_basic.c)
     //  * open the message queue (whose name is provided in the

@@ -95,7 +95,7 @@ static void delete_message_queues() {
   printf("Message queues deleted successfully.\n");
 }
 
-static void process_test(){
+static void processes(){
   pid_t client_pid, worker1_pid, worker2_pid;
 
   client_pid = fork();
@@ -104,7 +104,7 @@ static void process_test(){
     exit(1);
   }else if(client_pid == 0){
     printf("Client process started with PID: %d\n", getpid());
-    execlp("./client", "client", NULL);
+    execlp("./client", "client", client2dealer_name, NULL);
     perror("execlp() failed for client");
     exit(1);
   }
@@ -147,7 +147,7 @@ int main (int argc, char * argv[])
 
   create_message_queues();
 
-  process_test();
+  processes();
 
   delete_message_queues();
   
