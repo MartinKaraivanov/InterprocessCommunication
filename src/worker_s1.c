@@ -30,6 +30,65 @@ static void rsleep (int t);
 
 int main (int argc, char * argv[])
 {
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <S1_queue_name> <Rsp_queue_name>\n", argv[0]);
+        exit(1);
+    }
+
+    char *mq_name_s1 = argv[1];
+
+    mqd_t mq_s1 = mq_open(mq_name_s1, O_RDONLY | O_NONBLOCK);
+    if (mq_s1 == -1) {
+        perror("Error opening S1 message queue");
+        exit(1);
+    }
+
+    printf("Worker service 1 connected to queue: %s\n", mq_name_s1);
+
+    char *mq_name_rsp = argv[2];
+
+    mqd_t mq_rsp = mq_open(mq_name_rsp, O_WRONLY | O_NONBLOCK);
+    if (mq_rsp == -1) {
+        perror("Error opening response message queue \n");
+        exit(1);
+    }
+
+    printf("Resp connected to queue: %s\n", mq_name_rsp);
+
+    MQ_REQUEST_MESSAGE req;
+    MQ_RESPONSE_MESSAGE rsp;
+
+    while (true) {
+        // Read a job
+        ssize_t bytes_received = mq_receive(mq_s1, (char*)&req, sizeof(req), NULL);
+        if (bytes_received == -1) {
+            break;
+        }
+
+        // Simulate some random time
+        rsleep(10000);
+
+        // Process the job
+        printf("Worker 1 processing job: ID=%d, data=%d\n", req.a, req.b);
+        int result = service(req.b);
+
+        // Response
+        rsp.e = result;
+        snprintf(rsp.f, sizeof(rsp.f), "Processed job %d", req.a);
+        snprintf(rsp.g, sizeof(rsp.g), "Result: %d", result);
+
+        // Send the response
+        if (mq_send(mq_rsp, (char*)&rsp, sizeof(rsp), 0) == -1) {
+            perror("Error sending response to Rsp queue");
+            break;
+        }
+
+        printf("Worker 1 sent response: %d, '%s', '%s'\n\n", rsp.e, rsp.f, rsp.g);
+    }
+
+    mq_close(mq_s1);
+    mq_close(mq_rsp);
+
     // TODO:
     // (see message_queue_test() in interprocess_basic.c)
     //  * open the two message queues (whose names are provided in the

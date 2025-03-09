@@ -48,7 +48,7 @@ int main (int argc, char * argv[])
     printf("Client connected to queue: %s\n", mq_name);
 
     Request req;
-    while (getNextRequest(&req.job, &req.data, &req.service) == NO_ERR) { // Function from request.h
+    while (getNextRequest(&req.job, &req.data, &req.service) == NO_ERR) {
         printf("Client: Sending request (ID: %d, Data: %d, Service: %d)\n", req.job, req.data, req.service);
 
         if (mq_send(mq_fd, (char *)&req, sizeof(req), 0) == -1) {
@@ -56,7 +56,7 @@ int main (int argc, char * argv[])
             break;
         }
 
-        rsleep(50); // Some delay between requests
+        rsleep(500); // Some delay between requests
     }
 
     mq_close(mq_fd);

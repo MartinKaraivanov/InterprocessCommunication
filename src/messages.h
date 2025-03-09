@@ -25,8 +25,8 @@ typedef struct {
 
 typedef struct {
     int e;
-    char f[20];
-    char g[20];
+    char f[30];
+    char g[30];
 } MQ_RESPONSE_MESSAGE;
 
 #endif
