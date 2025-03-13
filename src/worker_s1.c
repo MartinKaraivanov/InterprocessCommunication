@@ -70,7 +70,7 @@ int main (int argc, char * argv[])
         struct timeval right_now;
         gettimeofday(&right_now, NULL);
         struct timespec timeout;
-        timeout.tv_sec = right_now.tv_sec + 1;
+        timeout.tv_sec = right_now.tv_sec + 3;
         timeout.tv_nsec = right_now.tv_usec * 1000;
 
         if (mq_timedreceive(mq_s1, (char*)&msg, sizeof(msg), NULL, &timeout) == -1) {
