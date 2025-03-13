@@ -21,12 +21,6 @@ typedef struct {
     int id;
     int data;
     int service;
-} MQ_REQUEST_MESSAGE;
-
-typedef struct {
-    int id;
-    int data;
-    int response;
-} MQ_RESPONSE_MESSAGE;
+} MQ_MESSAGE;
 
 #endif

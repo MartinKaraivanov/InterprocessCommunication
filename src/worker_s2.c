@@ -64,7 +64,7 @@ int main (int argc, char * argv[])
 
     printf("Resp connected to queue: %s\n", mq_name_rsp);
 
-    MQ_REQUEST_MESSAGE msg;
+    MQ_MESSAGE msg;
 
     while (true) {
         struct timeval right_now;

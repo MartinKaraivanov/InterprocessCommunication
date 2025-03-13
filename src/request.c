@@ -9,7 +9,7 @@
 #include "request.h"
 
 // Array of requests
-const Request requests[] = { {1, 26, 1}, {2, 5, 1}, {3, 10, 1}, {5, 13, 1}, {4, 3, 1} };
+const Request requests[] = { {1, 26, 1}, {2, 5, 1}, {3, 10, 2}, {5, 13, 2}, {4, 3, 1} };
 /*
 const Request requests[] = { {1, 26, 1}, {2, 5, 1}, {3, 10, 1}, {5, 13, 1}, {4, 3, 1}, 
 	{1, 26, 1}, {2, 5, 1}, {3, 10, 1}, {5, 13, 1}, {4, 3, 1},

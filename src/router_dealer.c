@@ -36,58 +36,56 @@ char worker2dealer_name[30] = "/Rsp_queue_group98";
 
 mqd_t mq_req, mq_s1, mq_s2, mq_rsp;
 
-pid_t client_pid, workers_pid[N_SERV1 + N_SERV2 + 1];
+pid_t client_pid, workers_pid[N_SERV1 + N_SERV2];
 
 static void create_processes(){
-  
+
   client_pid = fork();
   if(client_pid < 0){
     perror("fork failed");
     exit(1);
   }else if(client_pid == 0){
     printf("Client process started with PID: %d\n", getpid());
-    execlp("./client", "./client", client2dealer_name, NULL);
+    execlp("./client", "client", client2dealer_name, NULL);
     perror("execlp() failed for client");
     exit(1);
   }
 
-  pid_t pid;
   for(int i = 0; i < N_SERV1; i++){
-    pid = fork();
-    if (pid < 0) {
+    workers_pid[i] = fork();
+    if (workers_pid[i] < 0) {
       perror("fork() failed for worker1");
       exit(1);
-    } else if (pid == 0) {
+    } else if (workers_pid[i] == 0) {
       printf("Worker 1 process started (PID: %d)\n", getpid());
-      execlp("./worker_s1", "./worker_s1", dealer2worker1_name, worker2dealer_name, NULL);
+      execlp("./worker_s1", "worker_s1", dealer2worker1_name, worker2dealer_name, NULL);
       perror("execlp() failed for worker1");
       exit(1);
     }
-
-    workers_pid[i] = pid;
   }
-
-  for(int i = N_SERV1; i < N_SERV2; i++){
-    pid = fork();
-    if (pid < 0) {
+  
+  for(int i = 0; i < N_SERV2; i++){
+    int idx = i + N_SERV1;
+    workers_pid[idx] = fork();
+    if (workers_pid[idx] < 0) {
       perror("fork() failed for worker2");
       exit(1);
-    } else if (pid == 0) {
+    } else if (workers_pid[idx] == 0) {
       printf("Worker 2 process started (PID: %d)\n", getpid());
-      execlp("./worker_s2", "./worker_s2", dealer2worker2_name, worker2dealer_name, NULL);
+      execlp("./worker_s2", "worker_s2", dealer2worker2_name, worker2dealer_name, NULL);
       perror("execlp() failed for worker2");
       exit(1);
     }
-
-    workers_pid[i] = pid;
   }
+
 }
 
 static void create_message_queues() {
+
   struct mq_attr attr;
 
   attr.mq_maxmsg = MQ_MAX_MESSAGES;
-  attr.mq_msgsize = sizeof(MQ_REQUEST_MESSAGE);
+  attr.mq_msgsize = sizeof(MQ_MESSAGE);
 
   // Request queue
   mq_req = mq_open(client2dealer_name, O_CREAT | O_RDONLY | O_EXCL | O_NONBLOCK, 0600, &attr);
@@ -128,8 +126,6 @@ static void create_message_queues() {
   }
 
   // Response queue
-  attr.mq_maxmsg = MQ_MAX_MESSAGES;
-  attr.mq_msgsize = sizeof(MQ_RESPONSE_MESSAGE);
   mq_rsp = mq_open(worker2dealer_name, O_CREAT | O_RDONLY | O_EXCL | O_NONBLOCK, 0600, &attr);
   if (mq_rsp == (mqd_t)-1) {
       perror("mq_open() failed for Rsp_queue");
@@ -178,7 +174,7 @@ static void delete_message_queues() {
   printf("Message queues deleted successfully.\n");
 }
 
-bool attempt_msg_receive(mqd_t queue, MQ_REQUEST_MESSAGE *msg) {
+bool attempt_msg_receive(mqd_t queue, MQ_MESSAGE *msg) {
   int res = mq_receive(queue, (char*)msg, sizeof(*msg), NULL);
 
   if(res == -1) {
@@ -193,7 +189,7 @@ bool attempt_msg_receive(mqd_t queue, MQ_REQUEST_MESSAGE *msg) {
 }
 
 
-static void route_request(MQ_REQUEST_MESSAGE msg){
+static void route_request(MQ_MESSAGE msg){
   int res = -1;
   
   if(msg.service == 1) {
@@ -213,7 +209,7 @@ static void route_request(MQ_REQUEST_MESSAGE msg){
 }
 
 bool output_result() {
-  MQ_REQUEST_MESSAGE msg;
+  MQ_MESSAGE msg;
   bool res = attempt_msg_receive(mq_rsp, &msg);
   if(res == true) {
     fprintf(stdout, "%d -> %d\n", msg.id, msg.data);
@@ -225,7 +221,7 @@ bool output_result() {
 static void run() {
   
   while(waitpid(client_pid, NULL, WNOHANG) == 0) {
-    MQ_REQUEST_MESSAGE msg;
+    MQ_MESSAGE msg;
     if(attempt_msg_receive(mq_req, &msg)) {
       route_request(msg);
     }
@@ -247,6 +243,10 @@ static void run() {
         }
       }
     }
+  }
+
+  while(output_result()){
+
   }
 
 }
