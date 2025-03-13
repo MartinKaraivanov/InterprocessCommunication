@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Marwaan El Majdoub 1817078
+ * Martin Karaivanov 1953826
+ * Hristo Kanev 1963937
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:
@@ -45,11 +46,11 @@ int main (int argc, char * argv[])
         exit(1);
     }
 
-    printf("Client connected to queue: %s\n", mq_name);
+    //printf("Client connected to queue: %s\n", mq_name);
 
     Request req;
     while (getNextRequest(&req.job, &req.data, &req.service) == NO_ERR) {
-        printf("Client: Sending request (ID: %d, Data: %d, Service: %d)\n", req.job, req.data, req.service);
+        //printf("Client: Sending request (ID: %d, Data: %d, Service: %d)\n", req.job, req.data, req.service);
 
         if (mq_send(mq_fd, (char *)&req, sizeof(req), 0) == -1) {
             perror("mq_send() failed");
@@ -61,17 +62,7 @@ int main (int argc, char * argv[])
 
     mq_close(mq_fd);
     
-    printf("Client: Finished sending requests. Exiting.\n");
-
-    // TODO:
-    // (see message_queue_test() in interprocess_basic.c)
-    //  * open the message queue (whose name is provided in the
-    //    arguments)
-    //  * repeatingly:
-    //      - get the next job request 
-    //      - send the request to the Req message queue
-    //    until there are no more requests to send
-    //  * close the message queue
+    //printf("Client: Finished sending requests. Exiting.\n");
     
     return (0);
 }

@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Marwaan El Majdoub 1817078
+ * Martin Karaivanov 1953826
+ * Hristo Kanev 1963937
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:

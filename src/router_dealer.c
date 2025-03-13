@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Marwaan El Majdoub 1817078
+ * Martin Karaivanov 1953826
+ * Hristo Kanev 1963937
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:
@@ -45,7 +46,7 @@ static void create_processes(){
     perror("fork failed");
     exit(1);
   }else if(client_pid == 0){
-    printf("Client process started with PID: %d\n", getpid());
+    //printf("Client process started with PID: %d\n", getpid());
     execlp("./client", "client", client2dealer_name, NULL);
     perror("execlp() failed for client");
     exit(1);
@@ -57,7 +58,7 @@ static void create_processes(){
       perror("fork() failed for worker1");
       exit(1);
     } else if (workers_pid[i] == 0) {
-      printf("Worker 1 process started (PID: %d)\n", getpid());
+      //printf("Worker 1 process started (PID: %d)\n", getpid());
       execlp("./worker_s1", "worker_s1", dealer2worker1_name, worker2dealer_name, NULL);
       perror("execlp() failed for worker1");
       exit(1);
@@ -71,7 +72,7 @@ static void create_processes(){
       perror("fork() failed for worker2");
       exit(1);
     } else if (workers_pid[idx] == 0) {
-      printf("Worker 2 process started (PID: %d)\n", getpid());
+      //printf("Worker 2 process started (PID: %d)\n", getpid());
       execlp("./worker_s2", "worker_s2", dealer2worker2_name, worker2dealer_name, NULL);
       perror("execlp() failed for worker2");
       exit(1);
@@ -138,7 +139,7 @@ static void create_message_queues() {
     exit (1);
   }
 
-  printf("Message queues created successfully.\n");
+  //printf("Message queues created successfully.\n");
 }
 
 
@@ -171,7 +172,7 @@ static void delete_message_queues() {
     perror("mq_unlink() failed for Rsp_queue");
   }
 
-  printf("Message queues deleted successfully.\n");
+  //printf("Message queues deleted successfully.\n");
 }
 
 bool attempt_msg_receive(mqd_t queue, MQ_MESSAGE *msg) {
@@ -198,6 +199,7 @@ static void route_request(MQ_MESSAGE msg){
     res = mq_send(mq_s2, (char*)&msg, sizeof(msg), 0);
   } else {
     fprintf(stderr, "Invalid service id: %d\n", msg.service);
+    exit(1);
   }
 
   if(res == -1) {
@@ -205,7 +207,7 @@ static void route_request(MQ_MESSAGE msg){
     exit(1);
   }
 
-  printf("Routed request %d to a worker of service %d\n", msg.id, msg.service);
+  //printf("Routed request %d to a worker of service %d\n", msg.id, msg.service);
 }
 
 bool output_result() {
@@ -258,8 +260,6 @@ int main (int argc, char * argv[])
     fprintf (stderr, "%s: invalid arguments\n", argv[0]);
   }
 
-  delete_message_queues();
-
   create_message_queues();
 
   create_processes();
@@ -267,20 +267,6 @@ int main (int argc, char * argv[])
   run();
 
   delete_message_queues();
-  
-  // TODO:
-    //  * create the message queues (see message_queue_test() in
-    //    interprocess_basic.c)
-    //  * create the child processes (see process_test() and
-    //    message_queue_test())
-    //  * read requests from the Req queue and transfer them to the workers
-    //    with the Sx queues
-    //  * read answers from workers in the Rep queue and print them
-    //  * wait until the client has been stopped (see process_test())
-    //  * clean up the message queues (see message_queue_test())
-
-    // Important notice: make sure that the names of the message queues
-    // contain your goup number (to ensure uniqueness during testing)
   
   return (0);
 }

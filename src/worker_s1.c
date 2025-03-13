@@ -2,8 +2,9 @@
  * Operating Systems  (2INCO)  Practical Assignment
  * Interprocess Communication
  *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
+ * Marwaan El Majdoub 1817078
+ * Martin Karaivanov 1953826
+ * Hristo Kanev 1963937
  *
  * Grading:
  * Your work will be evaluated based on the following criteria:
@@ -48,7 +49,7 @@ int main (int argc, char * argv[])
         exit(1);
     }
 
-    printf("Worker service 1 connected to queue: %s\n", mq_name_s1);
+    //printf("Worker service 1 connected to queue: %s\n", mq_name_s1);
 
     char *mq_name_rsp = argv[2];
 
@@ -62,7 +63,7 @@ int main (int argc, char * argv[])
         exit(1);
     }
 
-    printf("Resp connected to queue: %s\n", mq_name_rsp);
+    //printf("Resp connected to queue: %s\n", mq_name_rsp);
 
     MQ_MESSAGE msg;
 
@@ -74,7 +75,7 @@ int main (int argc, char * argv[])
         timeout.tv_nsec = right_now.tv_usec * 1000;
 
         if (mq_timedreceive(mq_s1, (char*)&msg, sizeof(msg), NULL, &timeout) == -1) {
-            printf("A worker 1 didn't receive anything, exiting...\n");
+            //printf("A worker 1 didn't receive anything, exiting...\n");
             break;
         }
 
@@ -82,7 +83,7 @@ int main (int argc, char * argv[])
         rsleep(10000);
 
         // Process the job
-        printf("Worker 1 processing job: ID=%d, data=%d\n", msg.id, msg.data);
+        //printf("Worker 1 processing job: ID=%d, data=%d\n", msg.id, msg.data);
         int res = service(msg.data);
 
         // Response
@@ -94,23 +95,11 @@ int main (int argc, char * argv[])
             break;
         }
 
-        printf("Worker 1 sent response: %d, %d\n\n", msg.id, msg.data);
+        //printf("Worker 1 sent response: %d, %d\n\n", msg.id, msg.data);
     }
 
     mq_close(mq_s1);
     mq_close(mq_rsp);
-
-    // TODO:
-    // (see message_queue_test() in interprocess_basic.c)
-    //  * open the two message queues (whose names are provided in the
-    //    arguments)
-    //  * repeatedly:
-    //      - read from the S1 message queue the new job to do
-    //      - wait a random amount of time (e.g. rsleep(10000);)
-    //      - do the job 
-    //      - write the results to the Rsp message queue
-    //    until there are no more tasks to do
-    //  * close the message queues
 
     return(0);
 }
