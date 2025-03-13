@@ -1,18 +1,18 @@
 /* 
- * Operating Systems  (2INCO)  Practical Assignment
- * Interprocess Communication
- *
- * STUDENT_NAME_1 (STUDENT_NR_1)
- * STUDENT_NAME_2 (STUDENT_NR_2)
- *
- * Grading:
- * Your work will be evaluated based on the following criteria:
- * - Satisfaction of all the specifications
- * - Correctness of the program
- * - Coding style
- * - Report quality
- * - Deadlock analysis
- */
+* Operating Systems  (2INCO)  Practical Assignment
+* Interprocess Communication
+*
+* STUDENT_NAME_1 (STUDENT_NR_1)
+* STUDENT_NAME_2 (STUDENT_NR_2)
+*
+* Grading:
+* Your work will be evaluated based on the following criteria:
+* - Satisfaction of all the specifications
+* - Correctness of the program
+* - Coding style
+* - Report quality
+* - Deadlock analysis
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,16 +21,12 @@
 #include <unistd.h>     // for getpid()
 #include <mqueue.h>     // for mq-stuff
 #include <time.h>       // for time()
+#include <sys/time.h>
 
 #include "messages.h"
 #include "service2.h"
 
 static void rsleep (int t);
-
-char* name = "NO_NAME_DEFINED";
-mqd_t dealer2worker;
-mqd_t worker2dealer;
-
 
 int main (int argc, char * argv[])
 {
@@ -41,9 +37,14 @@ int main (int argc, char * argv[])
 
     char *mq_name_s2 = argv[1];
 
-    mqd_t mq_s2 = mq_open(mq_name_s2, O_RDONLY | O_NONBLOCK);
-    if (mq_s2 == -1) {
-        perror("Error opening S2 message queue");
+    mqd_t mq_s2 = mq_open(mq_name_s2, O_RDONLY);
+    if (mq_s2 == (mqd_t)-1) {
+        perror("Error S2 message queue");
+        exit(1);
+    }
+    struct mq_attr a;
+    if(mq_getattr(mq_s2, &a)){
+        perror("Error S2 message queue");
         exit(1);
     }
 
@@ -52,20 +53,28 @@ int main (int argc, char * argv[])
     char *mq_name_rsp = argv[2];
 
     mqd_t mq_rsp = mq_open(mq_name_rsp, O_WRONLY | O_NONBLOCK);
-    if (mq_rsp == -1) {
-        perror("Error opening response message queue \n");
+    if (mq_rsp == (mqd_t)-1) {
+        perror("Error Rsp message queue");
+        exit(1);
+    }
+    if(mq_getattr(mq_rsp, &a)){
+        perror("Error Rsp message queue");
         exit(1);
     }
 
     printf("Resp connected to queue: %s\n", mq_name_rsp);
 
-    MQ_REQUEST_MESSAGE req;
-    MQ_RESPONSE_MESSAGE rsp;
+    MQ_REQUEST_MESSAGE msg;
 
     while (true) {
-        // Read a job
-        ssize_t bytes_received = mq_receive(mq_s2, (char*)&req, sizeof(req), NULL);
-        if (bytes_received == -1) {
+        struct timeval right_now;
+        gettimeofday(&right_now, NULL);
+        struct timespec timeout;
+        timeout.tv_sec = right_now.tv_sec + 1;
+        timeout.tv_nsec = right_now.tv_usec * 1000;
+
+        if (mq_timedreceive(mq_s2, (char*)&msg, sizeof(msg), NULL, &timeout) == -1) {
+            printf("A worker 2 didn't receive anything, exiting...\n");
             break;
         }
 
@@ -73,21 +82,19 @@ int main (int argc, char * argv[])
         rsleep(10000);
 
         // Process the job
-        printf("Worker 2 processing job: ID=%d, data=%d\n", req.a, req.b);
-        int result = service(req.b);
+        printf("Worker 2 processing job: ID=%d, data=%d\n", msg.id, msg.data);
+        int res = service(msg.data);
 
         // Response
-        rsp.e = result;
-        rsp.f = req.b;
-        rsp.g = req.a;
+        msg.data = res;
 
         // Send the response
-        if (mq_send(mq_rsp, (char*)&rsp, sizeof(rsp), 0) == -1) {
+        if (mq_send(mq_rsp, (char*)&msg, sizeof(msg), 0) == -1) {
             perror("Error sending response to Rsp queue");
             break;
         }
 
-        printf("Worker 2 sent response: %d, %d, %d\n\n", rsp.e, rsp.f, rsp.g);
+        printf("Worker 2 sent response: %d, %d\n\n", msg.id, msg.data);
     }
 
     mq_close(mq_s2);
@@ -98,7 +105,7 @@ int main (int argc, char * argv[])
     //  * open the two message queues (whose names are provided in the
     //    arguments)
     //  * repeatedly:
-    //      - read from the S2 message queue the new job to do
+    //      - read from the S1 message queue the new job to do
     //      - wait a random amount of time (e.g. rsleep(10000);)
     //      - do the job 
     //      - write the results to the Rsp message queue
@@ -108,13 +115,15 @@ int main (int argc, char * argv[])
     return(0);
 }
 
+
 /*
- * rsleep(int t)
- *
- * The calling thread will be suspended for a random amount of time
- * between 0 and t microseconds
- * At the first call, the random generator is seeded with the current time
- */
+* rsleep(int t)
+*
+* The calling thread will be suspended for a random amount of time
+* between 0 and t microseconds
+* At the first call, the random generator is seeded with the current time
+*/
+
 static void rsleep (int t)
 {
     static bool first_call = true;

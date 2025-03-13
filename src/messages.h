@@ -18,15 +18,15 @@
 #define MESSAGES_H
 
 typedef struct {
-    int a;
-    int b;
-    char c;
+    int id;
+    int data;
+    int service;
 } MQ_REQUEST_MESSAGE;
 
 typedef struct {
-    int e;
-    int f;
-    int g;
+    int id;
+    int data;
+    int response;
 } MQ_RESPONSE_MESSAGE;
 
 #endif
